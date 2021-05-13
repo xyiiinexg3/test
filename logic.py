@@ -50,15 +50,16 @@ def cost_func(X, y, theta):
 '''
 
 ####计算梯度,计算每个参数的梯度
-def gradient(X, y, theta,b):
+def gradient(X, y, theta):
     grad = np.zeros(theta.shape)  ##占位
-    error = (sigmoid(np.dot(X, theta.T) + b) - y)[:, 1]
+    error = (model(X, theta) - y)
     # print(error)
+    error = error[:, 1]
+
     for j in range(len(theta.ravel())):
         term = np.multiply(error, X[:, j])  ###X的行表示样本，列表示特征
         grad[0, j] = np.sum(term) / len(X)
-    b = np.sum(error)
-    return grad, b
+    return grad
 
 
 # print(gradient(X,y,theta))
@@ -99,17 +100,14 @@ def descent(data, theta, batchSize, stopType, thresh, alpha):
     X, y = shuffleData(data)
     grad = np.zeros(theta.shape)
     costs = [cost_func(X, y, theta)]
-    b = 0
 
     while True:
-        grad, b = gradient(X[k:k + batchSize], y[k:k + batchSize], theta, b)
-
+        grad = gradient(X[k:k + batchSize], y[k:k + batchSize], theta)
         k += batchSize
         if k >= 100:
             k = 0
             X, y = shuffleData(data)
         theta = theta - alpha * grad  ##参数更新
-        b = b - alpha * b
         costs.append(cost_func(X, y, theta))  ##计算新的损失
         i += 1
 
@@ -121,12 +119,11 @@ def descent(data, theta, batchSize, stopType, thresh, alpha):
             value = grad
         if stopCriterion(stopType, value, thresh): break
 
-    return theta,b, i - 1, costs, grad, time.time() - init_time
+    return theta, i - 1, costs, grad, time.time() - init_time
 
 
 def RunExp(data, theta, batchSize, stopType, thresh, alpha):
-
-    theta,b, iter, costs, grad, dur = descent(data, theta, batchSize, stopType, thresh, alpha)
+    theta, iter, costs, grad, dur = descent(data, theta, batchSize, stopType, thresh, alpha)
     # name = "Original" if (data[:, 1] > 2).sum() > 1 else "Scaled"
     # name += "data- learning rate:{}-".format(alpha)
     #
@@ -137,12 +134,12 @@ def RunExp(data, theta, batchSize, stopType, thresh, alpha):
     # plt.ylabel("Cost")
     # plt.title("Error vs Itetarion")
     # plt.show()
-    return theta,b
+    return theta
 
-def decisionBoundary(bias,theta, df):
+def decisionBoundary(theta, df):
     # learning_parameters = param
     x1 = np.arange(20, 100)
-    x2 = -(bias + x1 * theta[0][1]) / theta[0][2]
+    x2 = -(x1 * theta[0][1]) / theta[0][2]
     # neg, pos, data = LoadData()
 
     # 设定标签
@@ -175,16 +172,15 @@ if __name__ == "__main__":
 
     # 3、选择一种优化方法求解逻辑回归参数
     n = 100
-    theta_,b_ = RunExp(orig_data, theta, n, STOP_ITER, thresh=12000, alpha=0.00000012) # 迭代法求解theta参数
-    print("theta:", theta_)
-    print("b:", b_)
+    theta_ = RunExp(orig_data, theta, n, STOP_ITER, thresh=12000, alpha=0.00000012) # 迭代法求解theta参数
+    print("theta:",theta_)
     # 4、两次考试成绩为45,85的录取概率
     test = np.array([[1], [45.0],[85.0]],dtype=np.float)
     odds = sigmoid(np.dot(theta_,test))
     print("odds:",odds)
 
     # 5、画出分类边界
-    decisionBoundary(b_, theta_,pdData)
+    decisionBoundary(theta_,pdData)
 
 
 # n = 100
@@ -208,3 +204,4 @@ def predict(X, theta):
 # accuracy = (correct.count(1) % len(correct))
 # print("accuracy = {0}%".format(accuracy))
 #
+s
