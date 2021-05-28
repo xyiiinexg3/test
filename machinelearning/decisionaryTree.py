@@ -44,7 +44,7 @@ def calcConditionalEntropy(dataSet,i,featList,uniqueVals):
         subDataSet = splitDataSet(dataSet,i,value)
         prob = len(subDataSet) / float(len(dataSet)) # 极大似然估计概率
         ce += prob * calcEntropy(subDataSet) #∑pH(Y|X=xi) 条件熵的计算
-    print(featList[i],"的条件熵",ce)
+    print(labels[i],"的条件熵",ce)
     return ce
 
 def calcInformationGain(dataSet,baseEntropy,i):
@@ -52,7 +52,7 @@ def calcInformationGain(dataSet,baseEntropy,i):
     uniqueVals = set(featList) # 换成集合 - 集合中的每个元素不重复
     newEntropy = calcConditionalEntropy(dataSet,i,featList,uniqueVals)#计算条件熵，
     infoGain = baseEntropy - newEntropy # 信息增益 = 信息熵 - 条件熵
-    print(featList[i],"的信息增益",infoGain)
+    print(labels[i],"的信息增益",infoGain)
     return infoGain
 
 def splitDataSet(dataSet,axis,value): # 按某个特征分类后的数据
@@ -84,15 +84,60 @@ def majorityCnt(classList):
         if vote not in classCount.keys():
             classCount[vote] = 0
         classCount[vote] += 1
+
+    print(classCount)
     sortedClassCount = sorted(classCount.items(), key=operator.itemgetter(1), reverse=True)
     return sortedClassCount[0][0]
 
+# def majorityCnt(classList):
+#     classCount = {}
+#     print(classList)
+#     for vote in classList:
+#         if vote[1] not in classCount.keys():
+#             classCount[vote[1]] = 0
+#         classCount[vote[1]] += vote[0]
+#     sortedClassCount = sorted(classCount.items(), key=operator.itemgetter(1), reverse=True)
+#     print("sorted",sortedClassCount)
+#     return sortedClassCount[0][0]
+
 def createTree(dataSet,labels):
+
     classList = [example[-1] for example in dataSet]
+    classList2 = [[example[0],example[-1]] for example in dataSet]
+    # print(classList)
+    print(classList.count(classList[0]))
+    print(len(classList))
+    print("----------")
+    # print(classList2)
+    lenll = 0
+    i = 0
+    for classL in classList2:
+        if classL[1] == classList2[0][1]:
+            lenll +=1
+        i +=1
+    print(lenll)
+    # print(classList2.count(classList2[0][1]))
+    print(len(classList2))
+
+    if classList2.count(classList2[0][1]) == len(classList2[0]):
+        print("1success")
+
     if classList.count(classList[0]) == len(classList):
+        print("fanhui1")
         return classList[0]
     if len(dataSet[0]) == 1:
+        print("fanghui222")
         return majorityCnt(classList)
+
+    # classList2 = [[example[0],example[-1]] for example in dataSet]
+    
+    # if classList.count(classList[0][1]) == len(classList[0]):
+    #     print(22)
+    #     return classList[0][1]
+    # if len(dataSet[0]) == 1:
+    #     print("major")
+    #     return majorityCnt(classList[0])  
+
     print("*******************")
     bestFeat = chooseBestFeatureToSplit(dataSet)  # 选择最优特征
     bestFeatLabel = labels[bestFeat]
